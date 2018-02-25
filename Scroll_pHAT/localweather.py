@@ -57,8 +57,8 @@ class MainApp:
             val = urllib.urlencode(qs).replace("+", "%20")
         except:
             val = urllib.parse.urlencode(qs).replace("+", "%20")
-
-        val += "%20and%20u%3D%22" + self.fahrenheit_or_celsius + "%22"
+            index_format = val.find("format")
+            val = val[:index_format - 1] + "%20and%20u%3D%22" + self.fahrenheit_or_celsius + "%22" + val[index_format - 1:]
         return val
 
     def get_weather(self, address):
