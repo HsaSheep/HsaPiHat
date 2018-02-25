@@ -14,16 +14,21 @@ try:
 except ImportError:
     exit("This script requires the requests module\nInstall with: sudo pip install requests")
 
-import datetime
 import scrollphat
+
+try:
+    import datetime
+except ImportError:
+    exit("This script requires the datetime module\nInstall with: sudo pip install datetime")
 
 
 class MainApp:
 
-    check_days = 3             # 予報を表示する日数
-    lotate_time_sec = 0.1      # スクロールの更新間隔(sec)
-    update_time_sec = 60 * 60  # 予報の更新間隔(sec)
-    local_time_hour = 9        # タイムゾーン(JP:+9h)
+    check_days = 3               # 予報を表示する日数
+    lotate_time_sec = 0.1        # スクロールの更新間隔(sec)
+    update_time_sec = 60 * 60    # 予報の更新間隔(sec)
+    local_time_hour = 9          # タイムゾーン(JP:+9h)
+    fahrenheit_or_celsius = 'c'  # 摂氏か華氏か切り替え(c か f)
 
     item = ""
     title = ""
@@ -52,6 +57,8 @@ class MainApp:
             val = urllib.urlencode(qs).replace("+", "%20")
         except:
             val = urllib.parse.urlencode(qs).replace("+", "%20")
+
+        val += "%20and%20u%3D%22c" + self.fahrenheit_or_celsius + "%22"
         return val
 
     def get_weather(self, address):
@@ -77,7 +84,10 @@ class MainApp:
         # Feel free to pick out other data here, for the scrolling message
         for x in range(0, days):
             self.item = self.weather["query"]["results"]["channel"]["item"]["forecast"][x]
-            self.output = self.output + " " + self.item["day"] + ": " + self.item["text"] + " - L: " + self.item["low"] + "F - H: " + self.item["high"] + "F"
+            if self.fahrenheit_or_celsius == 'c':
+                self.output = self.output + " " + self.item["day"] + ": " + self.item["text"] + "  -L: " + self.item["low"] + "C  -H: " + self.item["high"] + "C  "
+            else:
+                self.output = self.output + " " + self.item["day"] + ": " + self.item["text"] + "  -L: " + self.item["low"] + "F  -H: " + self.item["high"] + "F  "
 
     def time_adjustment(self, time_hour):
         self.get_date = datetime.datetime.strptime(self.weather["query"]["created"][:-1], '%Y-%m-%dT%H:%M:%S')
