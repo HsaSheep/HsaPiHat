@@ -40,7 +40,6 @@ class MainApp:
     def get_location_now(self):
         self.location = self.get_location()
         self.location_string = self.location["city"] + ", " + self.location["country"]
-        print("Location: " + self.location_string)
 
     # Python 2 vs 3 breaking changes.
     def encode(self, qs):
@@ -74,20 +73,21 @@ class MainApp:
             self.output = self.output + " " + self.item["day"] + ": " + self.item["text"] + " - L: " + self.item["low"] + "F - H: " + self.item["high"] + "F"
 
     def get_weather_info(self):
-        print("\n --- Weather Info ---")
-        print("Get: " + self.weather["query"]["created"][:-1])
-        print("   Location: " + self.location_string)
-        print(self.output)
+        print("")
+        print(" --- Weather Info ---")
+        print("       Get: " + self.weather["query"]["created"][:-1])
+        print("  Location: " + self.location_string)
+        print("      Data: " + self.output)
         print(" --------------------")
 
     def scroll_message(self):
 
         time_count_par_sec = 1 / self.lotate_time_sec
-        time_count = time_count_par_sec * self.update_time_sec
+        time_count_limit = time_count_par_sec * self.update_time_sec
+        time_count = time_count_limit
         while True:
             try:
-
-                if time_count >= time_count_par_sec * self.update_time_sec:
+                if time_count >= time_count_limit:
                     print("Update...")
                     self.get_weather_days(7)
                     self.get_weather_info()
@@ -106,7 +106,6 @@ class MainApp:
 
 
 if __name__ == '__main__':
-    print("Test")
     ma = MainApp()
 
     scrollphat.set_brightness(4)
