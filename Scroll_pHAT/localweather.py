@@ -3,8 +3,6 @@
 # requires: netifaces for looking up IP in readable way
 # requires: requests human readable HTTP requests
 
-# 要クラス化&selfで引き回し
-
 import json
 import socket
 import time
@@ -16,18 +14,24 @@ try:
 except ImportError:
     exit("This script requires the requests module\nInstall with: sudo pip install requests")
 
+import datetime
 import scrollphat
 
 
 class MainApp:
 
+    check_days = 3             # 予報を表示する日数
     lotate_time_sec = 0.1      # スクロールの更新間隔(sec)
     update_time_sec = 60 * 60  # 予報の更新間隔(sec)
+    local_time_hour = 9        # タイムゾーン(JP:+9h)
 
     item = ""
+    title = ""
     output = ""
     weather = ""
-    location = ""
+    get_date = ""
+    pub_date = ""
+    update_date = ""
     location_string = ""
 
     def get_location(self):
@@ -65,6 +69,9 @@ class MainApp:
 
     def get_weather_days(self, days):
         self.weather = self.get_weather(self.location_string)
+        self.time_adjustment(self.local_time_hour)
+        self.pub_date = self.weather["query"]["results"]["channel"]["item"]["pubDate"]
+        self.title = self.weather["query"]["results"]["channel"]["item"]["title"]
         self.output = ""
 
         # Feel free to pick out other data here, for the scrolling message
@@ -72,12 +79,26 @@ class MainApp:
             self.item = self.weather["query"]["results"]["channel"]["item"]["forecast"][x]
             self.output = self.output + " " + self.item["day"] + ": " + self.item["text"] + " - L: " + self.item["low"] + "F - H: " + self.item["high"] + "F"
 
+    def time_adjustment(self, time_hour):
+        self.get_date = datetime.datetime.strptime(self.weather["query"]["created"][:-1], '%Y-%m-%dT%H:%M:%S')
+        self.get_date += datetime.timedelta(hours=time_hour)
+        self.get_date = self.get_date.strftime('%Y/%m/%d %H:%M:%S')
+
+    def add_get_weather_date_output(self):
+        self.output += " Get: " + self.get_date
+
+    def add_get_weather_title_output(self):
+        self.output += " <<< " + self.title + " >>> "
+
     def get_weather_info(self):
         print("")
         print(" --- Weather Info ---")
-        print("       Get: " + self.weather["query"]["created"][:-1])
+        print("       Get: " + self.get_date)
+        print("   Updated: " + self.pub_date)
         print("  Location: " + self.location_string)
+        print("     Title: " + self.title)
         print("      Data: " + self.output)
+        # print("     Debug: " + str(self.weather))
         print(" --------------------")
 
     def scroll_message(self):
@@ -89,11 +110,13 @@ class MainApp:
             try:
                 if time_count >= time_count_limit:
                     print("Update...")
-                    self.get_weather_days(7)
+                    self.get_weather_days(self.check_days)
                     self.get_weather_info()
+                    self.add_get_weather_title_output()
                     scrollphat.write_string(self.output)
                     scrollphat.update()
                     time_count = 0
+
 
                 scrollphat.scroll()
                 scrollphat.update()
