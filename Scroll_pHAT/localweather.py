@@ -25,7 +25,7 @@ except ImportError:
 class MainApp:
 
     check_days = 3               # 予報を表示する日数
-    lotate_time_sec = 0.1        # スクロールの更新間隔(sec)
+    lotate_time_sec = 0.2        # スクロールの更新間隔(sec)
     update_time_sec = 60 * 60    # 予報の更新間隔(sec)
     local_time_hour = 9          # タイムゾーン(JP:+9h)
     fahrenheit_or_celsius = 'c'  # 摂氏か華氏か切り替え(c か f)
@@ -59,6 +59,7 @@ class MainApp:
             val = urllib.parse.urlencode(qs).replace("+", "%20")
             index_format = val.find("format")
             val = val[:index_format - 1] + "%20and%20u%3D%22" + self.fahrenheit_or_celsius + "%22" + val[index_format - 1:]
+            
         return val
 
     def get_weather(self, address):
