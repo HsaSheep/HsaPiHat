@@ -117,7 +117,6 @@ class MainApp:
         self.output += self.title
 
     def get_weather_info(self):
-        print("")
         print(" --- Weather Info ---")
         print("   GetData: " + self.get_date)
         print("   Updated: " + self.pub_date)
@@ -135,7 +134,8 @@ class MainApp:
         while True:
             try:
                 if time_count >= time_count_limit:
-                    print("Update...")
+                    print("")
+                    print(" --- Update... ---")
                     self.get_weather_days(self.check_days)
                     self.add_optional_signal_output("start")
                     # self.add_get_weather_title_output()
@@ -164,7 +164,7 @@ if __name__ == '__main__':
     ma.get_location_now()
 
     if ma.location["city"] != None:
-        
+
         ma.scroll_message()
 
         # 終了前実行(Ctrl-C検知後)
