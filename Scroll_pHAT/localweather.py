@@ -24,7 +24,7 @@ except ImportError:
 
 class MainApp:
 
-    check_days = 3               # 予報を表示する日数
+    check_days = 2               # 予報を表示する日数
     lotate_time_sec = 0.2        # スクロールの更新間隔(sec)
     update_time_sec = 60 * 60    # 予報の更新間隔(sec)
     local_time_hour = 9          # タイムゾーン(JP:+9h)
@@ -59,7 +59,7 @@ class MainApp:
             val = urllib.parse.urlencode(qs).replace("+", "%20")
             index_format = val.find("format")
             val = val[:index_format - 1] + "%20and%20u%3D%22" + self.fahrenheit_or_celsius + "%22" + val[index_format - 1:]
-            
+
         return val
 
     def get_weather(self, address):
@@ -95,20 +95,31 @@ class MainApp:
         self.get_date += datetime.timedelta(hours=time_hour)
         self.get_date = self.get_date.strftime('%Y/%m/%d %H:%M:%S')
 
-    def add_get_weather_date_output(self):
+    def add_update_weather_date_output(self):
         self.output += " Get: " + self.get_date
 
+    def add_get_weather_date_output(self):
+        self.output += " Update: " + self.pub_date[5:]
+
+    def add_optional_signal_output(self, start_or_end):
+        if start_or_end == "start":
+            self.output += " <<< "
+        elif start_or_end == "end":
+            self.output += " >>> "
+        else:
+            print("---Debug Not set start_or_end !!!")
+
     def add_get_weather_title_output(self):
-        self.output += " <<< " + self.title + " >>> "
+        self.output += self.title
 
     def get_weather_info(self):
         print("")
         print(" --- Weather Info ---")
-        print("       Get: " + self.get_date)
+        print("   GetData: " + self.get_date)
         print("   Updated: " + self.pub_date)
         print("  Location: " + self.location_string)
         print("     Title: " + self.title)
-        print("      Data: " + self.output)
+        print("    Output: " + self.output)
         # print("     Debug: " + str(self.weather))
         print(" --------------------")
 
@@ -122,12 +133,14 @@ class MainApp:
                 if time_count >= time_count_limit:
                     print("Update...")
                     self.get_weather_days(self.check_days)
+                    self.add_optional_signal_output("start")
+                    # self.add_get_weather_title_output()
+                    self.add_get_weather_date_output()
+                    self.add_optional_signal_output("end")
                     self.get_weather_info()
-                    self.add_get_weather_title_output()
                     scrollphat.write_string(self.output)
                     scrollphat.update()
                     time_count = 0
-
 
                 scrollphat.scroll()
                 scrollphat.update()
