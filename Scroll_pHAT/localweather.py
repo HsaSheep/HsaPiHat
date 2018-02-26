@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# coding=utf-8
 
 # requires: netifaces for looking up IP in readable way
 # requires: requests human readable HTTP requests
@@ -101,6 +102,9 @@ class MainApp:
     def add_get_weather_date_output(self):
         self.output += " Update: " + self.pub_date[5:]
 
+    def add_get_weather_time_output(self):
+        self.output += " Update: " + self.pub_date[17:]
+
     def add_optional_signal_output(self, start_or_end):
         if start_or_end == "start":
             self.output += " <<< "
@@ -135,7 +139,7 @@ class MainApp:
                     self.get_weather_days(self.check_days)
                     self.add_optional_signal_output("start")
                     # self.add_get_weather_title_output()
-                    self.add_get_weather_date_output()
+                    self.add_get_weather_time_output()
                     self.add_optional_signal_output("end")
                     self.get_weather_info()
                     scrollphat.write_string(self.output)
@@ -160,9 +164,10 @@ if __name__ == '__main__':
     ma.get_location_now()
 
     if ma.location["city"] != None:
-        ma.weather = ma.get_weather(ma.location_string)
-
+        
         ma.scroll_message()
 
+        # 終了前実行(Ctrl-C検知後)
         scrollphat.clear()
+        ma = None
         quit()
