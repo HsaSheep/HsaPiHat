@@ -27,7 +27,7 @@ class MainApp:
 
     check_days = 2               # 予報を表示する日数
     lotate_time_sec = 0.2        # スクロールの更新間隔(sec)
-    update_time_sec = 60 * 60    # 予報の更新間隔(sec)
+    update_time_sec = 60 * 10    # 予報の更新間隔(sec)
     local_time_hour = 9          # タイムゾーン(JP:+9h)
     fahrenheit_or_celsius = 'c'  # 摂氏か華氏か切り替え(c か f)
 
@@ -78,6 +78,10 @@ class MainApp:
 
     def get_weather_days(self, days):
         self.weather = self.get_weather(self.location_string)
+
+        if self.pub_date == self.weather["query"]["results"]["channel"]["item"]["pubDate"]:
+            return False
+
         self.time_adjustment(self.local_time_hour)
         self.pub_date = self.weather["query"]["results"]["channel"]["item"]["pubDate"]
         self.title = self.weather["query"]["results"]["channel"]["item"]["title"]
@@ -90,6 +94,7 @@ class MainApp:
                 self.output = self.output + " " + self.item["day"] + ": " + self.item["text"] + "  -L: " + self.item["low"] + "C  -H: " + self.item["high"] + "C  "
             else:
                 self.output = self.output + " " + self.item["day"] + ": " + self.item["text"] + "  -L: " + self.item["low"] + "F  -H: " + self.item["high"] + "F  "
+        return True
 
     def time_adjustment(self, time_hour):
         self.get_date = datetime.datetime.strptime(self.weather["query"]["created"][:-1], '%Y-%m-%dT%H:%M:%S')
@@ -100,10 +105,10 @@ class MainApp:
         self.output += " Get: " + self.get_date
 
     def add_get_weather_date_output(self):
-        self.output += " Update: " + self.pub_date[5:]
+        self.output += " UPDATE: " + self.pub_date[5:]
 
     def add_get_weather_time_output(self):
-        self.output += " Update: " + self.pub_date[17:]
+        self.output += " UPDATE: " + self.pub_date[17:]
 
     def add_optional_signal_output(self, start_or_end):
         if start_or_end == "start":
@@ -135,17 +140,20 @@ class MainApp:
             try:
                 if time_count >= time_count_limit:
                     print("")
-                    print(" --- Update... ---")
-                    self.get_weather_days(self.check_days)
-                    self.add_optional_signal_output("start")
-                    # self.add_get_weather_title_output()
-                    self.add_get_weather_time_output()
-                    self.add_optional_signal_output("end")
-                    self.get_weather_info()
-                    scrollphat.write_string(self.output)
-                    scrollphat.update()
+                    print(" --- Check... ---")
                     time_count = 0
-
+                    if self.get_weather_days(self.check_days):
+                        print(" --- Update... ---")
+                        self.add_optional_signal_output("start")
+                        self.add_get_weather_time_output()
+                        self.add_optional_signal_output("end")
+                        self.get_weather_info()
+                        scrollphat.write_string(self.output)
+                        scrollphat.update()
+                    else:
+                        print(" --- No Update... ---")
+                        print("   Updated: " + self.pub_date)
+                        print(" --------------------")
                 scrollphat.scroll()
                 scrollphat.update()
                 time.sleep(self.lotate_time_sec)
